@@ -144,3 +144,5 @@ for epoch in range(NUM_EPOCHS):
             torch.save(model.state_dict(), "lm-best.th")
 
         val_losses.append(val_loss)
+
+torch.save(model.state_dict(), 'lm-last.th')
