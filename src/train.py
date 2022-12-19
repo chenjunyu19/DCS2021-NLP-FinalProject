@@ -21,7 +21,6 @@ if CONFIG['useCUDA']:
     torch.cuda.set_device(1)
 
 LOSS_FN = nn.CrossEntropyLoss()
-LEARNING_RATE = 0.001
 
 
 lines, words = utils.read_data('train_en.txt')
@@ -80,7 +79,7 @@ def evaluate(model, dataloader):
         return loss
 
 
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+optimizer = torch.optim.Adam(model.parameters(), lr=CONFIG['learningRate'])
 
 # critical：训练的主要流程
 val_losses = []
