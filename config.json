@@ -1,0 +1,10 @@
+{
+    "useCUDA": true,
+    "seed": 202212,
+    "batchSize": 32,
+    "embeddingSize": 128,
+    "gradClip": 1,
+    "numEpochs": 100,
+    "learningRate": 0.001,
+    "rnnType": "LSTM"
+}

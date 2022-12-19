@@ -1,9 +1,15 @@
+import json
 import re
 
 # 用于去除标点的正则
 PUNC = r'[.!?/_,$%^*()+"\'+~@#%&]'
 SEP = re.compile(PUNC + r'*\s+')
 PREFIX = re.compile('^' + PUNC + '+')
+
+
+def read_config():
+    with open('config.json', 'r') as f:
+        return json.load(f)
 
 
 def read_data(filename: str):
@@ -35,7 +41,7 @@ def make_map(words: set):
     for i, word in enumerate(list(words)):
         word2id[word] = i+1
         id2word[i+1] = word
-    
+
     word2id['<unk>'] = len(word2id)
     id2word[len(id2word)] = '<unk>'
 

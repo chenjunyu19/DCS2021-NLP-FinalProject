@@ -6,6 +6,8 @@ from torch.utils.data import DataLoader
 import model as M
 import utils
 
+CONFIG = utils.read_config()
+
 with open('word2id.json', 'r') as f:
     word2id = json.load(f)
 id2word = {}
@@ -13,14 +15,11 @@ with open('id2word.json', 'r') as f:
     for k, v in json.load(f).items():
         id2word[int(k)] = v
 
-USE_CUDA = torch.cuda.is_available()
 VOCAB_SIZE = len(word2id)
-BATCH_SIZE = 32
-EMBEDDING_SIZE = 128
 
-model = M.RNNModel('RNN_TANH', VOCAB_SIZE, EMBEDDING_SIZE,
+model = M.RNNModel('RNN_TANH', VOCAB_SIZE, CONFIG['embeddingSize'],
                    nhid=512, dropout=0.5)
-if USE_CUDA:
+if CONFIG['useCUDA']:
     model = model.cuda()
 model.load_state_dict(torch.load('lm-last.th'))
 model.eval()
@@ -32,11 +31,11 @@ dl_test = DataLoader(ds_test)
 
 
 with torch.no_grad():
-    hidden = model.init_hidden(BATCH_SIZE, requires_grad=False)
+    hidden = model.init_hidden(CONFIG['batchSize'], requires_grad=False)
     # 将数据按batch输入
     for i, batch in enumerate(dl_test):
         data, target = batch
-        if USE_CUDA:
+        if CONFIG['useCUDA']:
             data, target = data.cuda(), target.cuda()
 
         hidden = M.repackage_hidden(hidden)

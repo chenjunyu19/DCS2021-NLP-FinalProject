@@ -10,23 +10,15 @@ from tqdm import tqdm
 import model as M
 import utils
 
-USE_CUDA = torch.cuda.is_available()
+CONFIG = utils.read_config()
 
 # 设置随机种子
-SEED = 202212
-random.seed(SEED)
-np.random.seed(SEED)
-torch.manual_seed(SEED)
-if USE_CUDA:
-    torch.cuda.manual_seed(SEED)
+random.seed(CONFIG['seed'])
+np.random.seed(CONFIG['seed'])
+torch.manual_seed(CONFIG['seed'])
+if CONFIG['useCUDA']:
+    torch.cuda.manual_seed(CONFIG['seed'])
     torch.cuda.set_device(1)
-
-# 超参设置
-BATCH_SIZE = 32
-EMBEDDING_SIZE = 128
-# MAX_VOCAB_SIZE = 50000
-GRAD_CLIP = 1
-NUM_EPOCHS = 100
 
 LOSS_FN = nn.CrossEntropyLoss()
 LEARNING_RATE = 0.001
@@ -46,9 +38,9 @@ lines_e, words_e = utils.read_data('eval_en.txt')
 ds_eval = M.Dataset(word2id, id2word, lines_e)
 dl_eval = DataLoader(ds_eval)
 
-model = M.RNNModel('RNN_TANH', VOCAB_SIZE, EMBEDDING_SIZE,
+model = M.RNNModel('RNN_TANH', VOCAB_SIZE, CONFIG['embeddingSize'],
                    nhid=512, dropout=0.5)
-if USE_CUDA:
+if CONFIG['useCUDA']:
     model = model.cuda()
 
 
@@ -61,11 +53,11 @@ def evaluate(model, dataloader):
 
     # 不是训练，关闭梯度加快运行速度
     with torch.no_grad():
-        hidden = model.init_hidden(BATCH_SIZE, requires_grad=False)
+        hidden = model.init_hidden(CONFIG['batchSize'], requires_grad=False)
         # 将数据按batch输入
         for i, batch in enumerate(dataloader):
             data, target = batch
-            if USE_CUDA:
+            if CONFIG['useCUDA']:
                 data, target = data.cuda(), target.cuda()
 
             hidden = M.repackage_hidden(hidden)
@@ -92,20 +84,20 @@ optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 # critical：训练的主要流程
 val_losses = []
-progressive = tqdm(range(NUM_EPOCHS))
+progressive = tqdm(range(CONFIG['numEpochs']))
 for epoch in progressive:
     # critical：训练前务必手动设置model.train()
     # model.train()对应另一个函数model.eval(),前者有梯度用于训练，后者无梯度节省内存用于测试
     # 神经网络的后向传播和更新都依赖于梯度，没有梯度跑几个epoch都是无济于事
     model.train()
-    hidden = model.init_hidden(BATCH_SIZE)
+    hidden = model.init_hidden(CONFIG['batchSize'])
 
     # critical：将数据集中的数据按batch_size划分好，一一读入模型中
     for i, batch in enumerate(dl_train):
         data, target = batch
 
         # 使用gpu训练需要将数据也迁移到gpu
-        if USE_CUDA:
+        if CONFIG['useCUDA']:
             data, target = data.cuda(), target.cuda()
 
         hidden = M.repackage_hidden(hidden)
@@ -125,7 +117,7 @@ for epoch in progressive:
         loss.backward()
 
         # 解决梯度爆炸的问题
-        nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP)
+        nn.utils.clip_grad_norm_(model.parameters(), CONFIG['gradClip'])
 
         # critical：optimizer更新模型参数
         optimizer.step()
