@@ -28,12 +28,15 @@ def read_data(filename: str):
 def make_map(words: set):
     "根据词表，返回双向 词语-id 映射 word2id, id2word"
 
-    word2id = {'<pad>': 0, '<unknown>': 1}
-    id2word = {0: '<pad>', 1: '<unknown>'}
+    word2id = {'<pad>': 0}
+    id2word = {0: '<pad>'}
 
     # 生成 词语-id 映射
     for i, word in enumerate(list(words)):
         word2id[word] = i+1
         id2word[i+1] = word
+    
+    word2id['<unk>'] = len(word2id)
+    id2word[len(id2word)] = '<unk>'
 
     return word2id, id2word
