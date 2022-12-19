@@ -1,4 +1,5 @@
 import json
+import os
 
 import torch
 from torch.utils.data import DataLoader
@@ -8,10 +9,10 @@ import utils
 
 CONFIG = utils.read_config()
 
-with open('word2id.json', 'r') as f:
+with open(os.path.join(CONFIG['dataDir'], 'word2id.json'), 'r') as f:
     word2id = json.load(f)
 id2word = {}
-with open('id2word.json', 'r') as f:
+with open(os.path.join(CONFIG['dataDir'], 'id2word.json'), 'r') as f:
     for k, v in json.load(f).items():
         id2word[int(k)] = v
 
@@ -21,7 +22,10 @@ model = M.RNNModel('RNN_TANH', VOCAB_SIZE, CONFIG['embeddingSize'],
                    nhid=512, dropout=0.5)
 if CONFIG['useCUDA']:
     model = model.cuda()
-model.load_state_dict(torch.load('lm-last.th'))
+print('Which state dict do you want to use?')
+fname = input('Type `best`, `last` or epoch number: ')
+model.load_state_dict(torch.load(os.path.join(
+    CONFIG['dataDir'], f'state_dict_{fname}.th')))
 model.eval()
 
 

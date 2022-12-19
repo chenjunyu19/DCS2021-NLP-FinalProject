@@ -1,4 +1,5 @@
 {
+    "dataDir": "checkpoints",
     "useCUDA": true,
     "seed": 202212,
     "batchSize": 32,

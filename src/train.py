@@ -1,4 +1,5 @@
 import json
+import os
 import random
 
 import numpy as np
@@ -26,9 +27,11 @@ LOSS_FN = nn.CrossEntropyLoss()
 lines, words = utils.read_data('train_en.txt')
 word2id, id2word = utils.make_map(words)
 VOCAB_SIZE = len(word2id)
-with open('word2id.json', 'w') as f:
+if not os.path.exists(CONFIG['dataDir']):
+    os.mkdir(CONFIG['dataDir'])
+with open(os.path.join(CONFIG['dataDir'], 'word2id.json'), 'w') as f:
     json.dump(word2id, f)
-with open('id2word.json', 'w') as f:
+with open(os.path.join(CONFIG['dataDir'], 'id2word.json'), 'w') as f:
     json.dump(id2word, f)
 ds_train = M.Dataset(word2id, id2word, lines)
 dl_train = DataLoader(ds_train)
@@ -126,6 +129,8 @@ for epoch in progressive:
     # 定时evaluate模型，查看模型训练情况
     if (epoch+1) % 10 == 0:
         progressive.write(f'[train] epoch: {epoch}, loss: {loss.item()}')
+        torch.save(model.state_dict(), os.path.join(
+            CONFIG['dataDir'], f'state_dict_{epoch}.th'))
         val_loss = evaluate(model, dl_eval)
         progressive.write(f'[ val ] epoch: {epoch}, val_loss: {val_loss}')
 
@@ -134,8 +139,10 @@ for epoch in progressive:
             progressive.write(f'epoch {epoch} is the new best model')
             # critical：使用torch.save()保存模型到路径lm-best.th
             # 之后可以通过torch.load()读取保存好的模型
-            torch.save(model.state_dict(), 'lm-best.th')
+            torch.save(model.state_dict(), os.path.join(
+                CONFIG['dataDir'], 'state_dict_best.th'))
 
         val_losses.append(val_loss)
 
-torch.save(model.state_dict(), 'lm-last.th')
+torch.save(model.state_dict(), os.path.join(
+    CONFIG['dataDir'], 'state_dict_last.th'))
