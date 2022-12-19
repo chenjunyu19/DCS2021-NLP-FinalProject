@@ -2,7 +2,7 @@ import json
 import re
 
 # 用于去除标点的正则
-PUNC = r'[.!?/_,$%^*()+"\'+~@#%&]'
+PUNC = r'[.!?/_,$%^*()+"\'-+~@#%&]'
 SEP = re.compile(PUNC + r'*\s+')
 PREFIX = re.compile('^' + PUNC + '+')
 
