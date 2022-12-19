@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 import model as M
 import utils
@@ -91,7 +92,8 @@ optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 # critical：训练的主要流程
 val_losses = []
-for epoch in range(NUM_EPOCHS):
+progressive = tqdm(range(NUM_EPOCHS))
+for epoch in progressive:
     # critical：训练前务必手动设置model.train()
     # model.train()对应另一个函数model.eval(),前者有梯度用于训练，后者无梯度节省内存用于测试
     # 神经网络的后向传播和更新都依赖于梯度，没有梯度跑几个epoch都是无济于事
@@ -128,20 +130,20 @@ for epoch in range(NUM_EPOCHS):
         # critical：optimizer更新模型参数
         optimizer.step()
 
-    # 定时打印模型损失，查看模型训练情况
-    if (epoch+1) % 5 == 0:
-        print("epoch:", epoch, " iter:", i, "loss", loss.item())
+    progressive.set_description(f'epoch: {epoch}, loss: {loss.item():.6f}')
 
     # 定时evaluate模型，查看模型训练情况
     if (epoch+1) % 10 == 0:
+        progressive.write(f'[train] epoch: {epoch}, loss: {loss.item()}')
         val_loss = evaluate(model, dl_eval)
+        progressive.write(f'[ val ] epoch: {epoch}, val_loss: {val_loss}')
 
         # critical：根据evaluate的结果，保存最好的模型
         if len(val_losses) == 0 or val_loss < min(val_losses):
-            print("epoch:", epoch, "best model, val loss: ", val_loss)
+            progressive.write(f'epoch {epoch} is the new best model')
             # critical：使用torch.save()保存模型到路径lm-best.th
             # 之后可以通过torch.load()读取保存好的模型
-            torch.save(model.state_dict(), "lm-best.th")
+            torch.save(model.state_dict(), 'lm-best.th')
 
         val_losses.append(val_loss)
 
