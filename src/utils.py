@@ -22,17 +22,20 @@ def read_data(filename: str, tokenizer: str):
     torchtext_tokenizer = get_tokenizer("basic_english")
     with open(filename, 'r', encoding='utf-8') as f:
         for line in f.readlines():
+            # 自制分词
             if tokenizer == 'handmade':
                 # 数据集中有些 <br />，替换为空格
                 # 先用标点+空格分割，然后去除前缀标点，转为小写
                 line = [PREFIX.sub('', word).lower() for word
                         in SEP.split(line.replace('<br />', ' '))
                         if len(PREFIX.sub('', word))]
+            # torchtext 分词
             elif tokenizer == 'torchtext':
                 line = torchtext_tokenizer(line.replace('<br />', ' ').strip())
             else:
                 raise ValueError(
                     "unknown parameter, you can use ['handmade', 'torchtext']")
+            # 去除空行
             if len(line) == 0:
                 continue
             lines.append(line)

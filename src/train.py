@@ -129,15 +129,19 @@ for epoch in progressive:
         # critical：optimizer更新模型参数
         optimizer.step()
 
+    # 进行评估
     val_loss = evaluate(model, dl_eval)
     progressive.set_description(
         f'epoch: {epoch}, loss: {loss.item():.6f}, val_loss: {val_loss:.6f}')
+
     # critical：根据evaluate的结果，保存最好的模型
     if len(val_losses) == 0 or val_loss < min(val_losses):
         progressive.write(f'epoch {epoch} is the new best model')
         torch.save(model.state_dict(), os.path.join(
             CONFIG['dataDir'], 'state_dict_best.th'))
     val_losses.append(val_loss)
+
+    # 记录损失
     losses.append({'loss': loss.item(), 'val_loss': val_loss})
 
     # 保存 checkpoint
@@ -145,7 +149,9 @@ for epoch in progressive:
         torch.save(model.state_dict(), os.path.join(
             CONFIG['dataDir'], f'state_dict_{epoch}.th'))
 
+# 保存最后的模型
 torch.save(model.state_dict(), os.path.join(
     CONFIG['dataDir'], 'state_dict_last.th'))
+# 保存损失记录
 with open(os.path.join(CONFIG['dataDir'], 'losses.json'), 'w') as f:
     json.dump(losses, f)

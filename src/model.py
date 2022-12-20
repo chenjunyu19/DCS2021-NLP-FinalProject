@@ -22,7 +22,7 @@ class Dataset(torch.utils.data.Dataset):
         return ' '.join([self.id2word[id] for id in ids])
 
     def get_ids_by_words(self, words: List[str]) -> List[int]:
-        # 将未登陆词标记为 <unk>
+        # 将未登录词标记为 <unk>
         return [self.word2id[word if word in self.word2id else '<unk>'] for word in words]
 
     def __len__(self):

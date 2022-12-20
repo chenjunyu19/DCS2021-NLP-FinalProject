@@ -55,11 +55,15 @@ with torch.no_grad():
             # h_n 保存着 RNN 最后一个时间步的隐状态。
             # c_n 保存着 RNN 最后一个时间步的细胞状态。
             hidden = hidden[0]
+
+        # 将隐藏层转换为词表中每个词的分数
         decoded = model.decoder(hidden.view(
             hidden.size(0) * hidden.size(1), hidden.size(2)))
         result = {}
         for i, score in enumerate(decoded[0]):
             result[id2word[i]] = float(score)
+
+        # 打印输入和分数最高的前 10 个词
         print('=' * 16)
         print(ds_test.get_words_by_ids([int(i)
               for i in list(batch[0][0])]) + ':')
