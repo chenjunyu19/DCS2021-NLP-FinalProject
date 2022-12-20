@@ -39,7 +39,7 @@ model.load_state_dict(torch.load(os.path.join(
 # 进行测试
 model.eval()
 with torch.no_grad():
-    hidden = model.init_hidden(CONFIG['batchSize'], requires_grad=False)
+    hidden = model.init_hidden(requires_grad=False)
     # 将数据按batch输入
     for i, batch in enumerate(dl_test):
         data, target = batch

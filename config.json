@@ -3,7 +3,6 @@
     "tokenizer": "torchtext",
     "useCUDA": true,
     "seed": 202212,
-    "batchSize": 32,
     "embeddingSize": 128,
     "gradClip": 1,
     "numEpochs": 256,

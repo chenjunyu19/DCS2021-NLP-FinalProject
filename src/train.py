@@ -59,7 +59,7 @@ def evaluate(model, dataloader):
 
     # 不是训练，关闭梯度加快运行速度
     with torch.no_grad():
-        hidden = model.init_hidden(CONFIG['batchSize'], requires_grad=False)
+        hidden = model.init_hidden(requires_grad=False)
         # 将数据按batch输入
         for i, batch in enumerate(dataloader):
             data, target = batch
@@ -96,7 +96,7 @@ for epoch in progressive:
     # model.train()对应另一个函数model.eval(),前者有梯度用于训练，后者无梯度节省内存用于测试
     # 神经网络的后向传播和更新都依赖于梯度，没有梯度跑几个epoch都是无济于事
     model.train()
-    hidden = model.init_hidden(CONFIG['batchSize'])
+    hidden = model.init_hidden()
 
     # critical：将数据集中的数据按batch_size划分好，一一读入模型中
     for i, batch in enumerate(dl_train):

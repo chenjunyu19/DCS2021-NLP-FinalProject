@@ -76,10 +76,10 @@ class RNNModel(nn.Module):
 
         return decoded.view(output.size(0), output.size(1), decoded.size(1)), hidden
 
-    def init_hidden(self, bsz, requires_grad=True):
+    def init_hidden(self, requires_grad=True):
         weight = next(self.parameters())
         if self.rnn_type == 'LSTM':
-            return (weight.new_zeros((1, bsz, self.nhid), requires_grad=requires_grad),
-                    weight.new_zeros((1, bsz, self.nhid), requires_grad=requires_grad))
+            return (weight.new_zeros((1, 1, self.nhid), requires_grad=requires_grad),
+                    weight.new_zeros((1, 1, self.nhid), requires_grad=requires_grad))
         else:
-            return weight.new_zeros((1, bsz, self.nhid), requires_grad=requires_grad)
+            return weight.new_zeros((1, 1, self.nhid), requires_grad=requires_grad)
