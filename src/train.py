@@ -22,8 +22,8 @@ if CONFIG['useCUDA']:
     torch.cuda.set_device(1)
 
 # 读取数据集
-lines, words = utils.read_data('train_en.txt')
-lines_e, words_e = utils.read_data('eval_en.txt')
+lines, words = utils.read_data('train_en.txt', CONFIG['tokenizer'])
+lines_e, words_e = utils.read_data('eval_en.txt', CONFIG['tokenizer'])
 # 生成 词语-id 映射
 word2id, id2word = utils.make_map(words)
 

@@ -19,7 +19,7 @@ with open(os.path.join(CONFIG['dataDir'], 'id2word.json'), 'r') as f:
         id2word[int(k)] = v
 
 # 读取测试集
-lines, words = utils.read_data('test_en.txt')
+lines, words = utils.read_data('test_en.txt', CONFIG['tokenizer'])
 ds_test = M.Dataset(word2id, id2word, lines)
 dl_test = DataLoader(ds_test)
 

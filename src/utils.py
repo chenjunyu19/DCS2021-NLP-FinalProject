@@ -1,6 +1,8 @@
 import json
 import re
 
+from torchtext.data import get_tokenizer
+
 # 用于去除标点的正则
 PUNC = r'[.!?/_,$%^*()+"\'-+~@#%&]'
 SEP = re.compile(PUNC + r'*\s+')
@@ -12,18 +14,27 @@ def read_config():
         return json.load(f)
 
 
-def read_data(filename: str):
-    "按行读取数据集文件，分词、去除标点后返回 lines, words"
+def read_data(filename: str, tokenizer: str):
+    "按行读取数据集文件，分词后返回 lines, words"
 
     lines = []
     words = set()
+    torchtext_tokenizer = get_tokenizer("basic_english")
     with open(filename, 'r', encoding='utf-8') as f:
         for line in f.readlines():
-            # 数据集中有些 <br />，替换为空格
-            # 先用标点+空格分割，然后去除前缀标点，转为小写
-            line = [PREFIX.sub('', word).lower() for word
-                    in SEP.split(line.replace('<br />', ' '))
-                    if len(PREFIX.sub('', word))]
+            if tokenizer == 'handmade':
+                # 数据集中有些 <br />，替换为空格
+                # 先用标点+空格分割，然后去除前缀标点，转为小写
+                line = [PREFIX.sub('', word).lower() for word
+                        in SEP.split(line.replace('<br />', ' '))
+                        if len(PREFIX.sub('', word))]
+            elif tokenizer == 'torchtext':
+                line = torchtext_tokenizer(line.replace('<br />', ' ').strip())
+            else:
+                raise ValueError(
+                    "unknown parameter, you can use ['handmade', 'torchtext']")
+            if len(line) == 0:
+                continue
             lines.append(line)
             # 添加词语到词表
             for word in line:

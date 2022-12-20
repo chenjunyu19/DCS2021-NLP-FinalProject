@@ -1,5 +1,6 @@
 {
     "dataDir": "checkpoints",
+    "tokenizer": "torchtext",
     "useCUDA": true,
     "seed": 202212,
     "batchSize": 32,
