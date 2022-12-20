@@ -89,6 +89,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=CONFIG['learningRate'])
 
 # critical：训练的主要流程
 val_losses = []
+losses = []
 progressive = tqdm(range(CONFIG['numEpochs']))
 for epoch in progressive:
     # critical：训练前务必手动设置model.train()
@@ -128,25 +129,23 @@ for epoch in progressive:
         # critical：optimizer更新模型参数
         optimizer.step()
 
-    progressive.set_description(f'epoch: {epoch}, loss: {loss.item():.6f}')
+    val_loss = evaluate(model, dl_eval)
+    progressive.set_description(
+        f'epoch: {epoch}, loss: {loss.item():.6f}, val_loss: {val_loss:.6f}')
+    # critical：根据evaluate的结果，保存最好的模型
+    if len(val_losses) == 0 or val_loss < min(val_losses):
+        progressive.write(f'epoch {epoch} is the new best model')
+        torch.save(model.state_dict(), os.path.join(
+            CONFIG['dataDir'], 'state_dict_best.th'))
+    val_losses.append(val_loss)
+    losses.append({'loss': loss.item(), 'val_loss': val_loss})
 
-    # 定时evaluate模型，查看模型训练情况
-    if (epoch+1) % 10 == 0:
-        progressive.write(f'[train] epoch: {epoch}, loss: {loss.item()}')
+    # 保存 checkpoint
+    if (epoch + 1) % (CONFIG['numEpochs'] // 10) == 0:
         torch.save(model.state_dict(), os.path.join(
             CONFIG['dataDir'], f'state_dict_{epoch}.th'))
-        val_loss = evaluate(model, dl_eval)
-        progressive.write(f'[ val ] epoch: {epoch}, val_loss: {val_loss}')
-
-        # critical：根据evaluate的结果，保存最好的模型
-        if len(val_losses) == 0 or val_loss < min(val_losses):
-            progressive.write(f'epoch {epoch} is the new best model')
-            # critical：使用torch.save()保存模型到路径lm-best.th
-            # 之后可以通过torch.load()读取保存好的模型
-            torch.save(model.state_dict(), os.path.join(
-                CONFIG['dataDir'], 'state_dict_best.th'))
-
-        val_losses.append(val_loss)
 
 torch.save(model.state_dict(), os.path.join(
     CONFIG['dataDir'], 'state_dict_last.th'))
+with open(os.path.join(CONFIG['dataDir'], 'losses.json'), 'w') as f:
+    json.dump(losses, f)
