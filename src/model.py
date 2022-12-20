@@ -45,8 +45,9 @@ class RNNModel(nn.Module):
         self.nhid = nhid
 
         self.drop = nn.Dropout(dropout)
-        self.encoder = nn.Embedding(ntoken, ninp)
+        self.encoder = nn.Embedding(ntoken, ninp, padding_idx=0)
         self.decoder = nn.Linear(nhid, ntoken)
+        self.decoder.bias.data.zero_()
 
         if rnn_type in ['LSTM', 'GRU']:
             self.rnn = getattr(nn, rnn_type)(
@@ -60,17 +61,6 @@ class RNNModel(nn.Module):
                     ['LSTM', 'GRU', 'RNN_TANH', 'RNN_RELU']")
             self.rnn = nn.RNN(ninp, nhid, nonlinearity=nonlinearity,
                               dropout=dropout, batch_first=True)
-
-        self.init_weights()
-
-    def init_weights(self):
-        initrange = 0.1
-        # 词嵌入模型的权值初始化
-        self.encoder.weight.data.uniform_(-initrange, initrange)
-
-        # 线性转化器的权值和偏移值大小
-        self.decoder.bias.data.zero_()
-        self.decoder.weight.data.uniform_(-initrange, initrange)
 
     # critical：定义前向传播
     def forward(self, inputs, hidden):
