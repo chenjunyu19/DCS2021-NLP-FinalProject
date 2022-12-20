@@ -7,3 +7,15 @@
 出于便利考虑，此仓库中包含部分外部来源文件。
 
 - `{train,eval,test}_en.txt`：数据集，来自[作业示例项目](https://github.com/djz233/DCS2021)。
+
+## 开发环境
+
+```
+x86_64 GNU/Linux Ubuntu
+Python 3.8.15
+
+numpy
+torch==1.13.0
+torchtext==0.14.0
+tqdm
+```
