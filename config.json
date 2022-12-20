@@ -6,7 +6,7 @@
     "batchSize": 32,
     "embeddingSize": 128,
     "gradClip": 1,
-    "numEpochs": 100,
-    "learningRate": 0.001,
+    "numEpochs": 256,
+    "learningRate": 0.0001,
     "rnnType": "LSTM"
 }
