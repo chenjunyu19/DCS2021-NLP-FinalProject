@@ -9,31 +9,35 @@ import utils
 
 CONFIG = utils.read_config()
 
+# 读取 词语-id 映射
 with open(os.path.join(CONFIG['dataDir'], 'word2id.json'), 'r') as f:
     word2id = json.load(f)
 id2word = {}
 with open(os.path.join(CONFIG['dataDir'], 'id2word.json'), 'r') as f:
+    # JSON 的键是字符串，需要转换回整数
     for k, v in json.load(f).items():
         id2word[int(k)] = v
 
-VOCAB_SIZE = len(word2id)
-
-model = M.RNNModel('RNN_TANH', VOCAB_SIZE, CONFIG['embeddingSize'],
-                   nhid=512, dropout=0.5)
-if CONFIG['useCUDA']:
-    model = model.cuda()
-print('Which state dict do you want to use?')
-fname = input('Type `best`, `last` or epoch number: ')
-model.load_state_dict(torch.load(os.path.join(
-    CONFIG['dataDir'], f'state_dict_{fname}.th')))
-model.eval()
-
-
+# 读取测试集
 lines, words = utils.read_data('test_en.txt')
 ds_test = M.Dataset(word2id, id2word, lines)
 dl_test = DataLoader(ds_test)
 
+# 创建 RNN 模型
+VOCAB_SIZE = len(word2id)
+model = M.RNNModel('RNN_TANH', VOCAB_SIZE, CONFIG['embeddingSize'],
+                   nhid=512, dropout=0.5)
+if CONFIG['useCUDA']:
+    model = model.cuda()
 
+# 载入训练结果
+print('Which state dict do you want to use?')
+fname = input('Type `best`, `last` or epoch number: ')
+model.load_state_dict(torch.load(os.path.join(
+    CONFIG['dataDir'], f'state_dict_{fname}.th')))
+
+# 进行测试
+model.eval()
 with torch.no_grad():
     hidden = model.init_hidden(CONFIG['batchSize'], requires_grad=False)
     # 将数据按batch输入

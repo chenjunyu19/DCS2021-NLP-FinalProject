@@ -21,25 +21,29 @@ if CONFIG['useCUDA']:
     torch.cuda.manual_seed(CONFIG['seed'])
     torch.cuda.set_device(1)
 
-LOSS_FN = nn.CrossEntropyLoss()
-
-
+# 读取数据集
 lines, words = utils.read_data('train_en.txt')
+lines_e, words_e = utils.read_data('eval_en.txt')
+# 生成 词语-id 映射
 word2id, id2word = utils.make_map(words)
-VOCAB_SIZE = len(word2id)
+
+# 保存映射
 if not os.path.exists(CONFIG['dataDir']):
     os.mkdir(CONFIG['dataDir'])
 with open(os.path.join(CONFIG['dataDir'], 'word2id.json'), 'w') as f:
     json.dump(word2id, f)
 with open(os.path.join(CONFIG['dataDir'], 'id2word.json'), 'w') as f:
     json.dump(id2word, f)
+
+# 创建数据集
 ds_train = M.Dataset(word2id, id2word, lines)
 dl_train = DataLoader(ds_train)
-
-lines_e, words_e = utils.read_data('eval_en.txt')
 ds_eval = M.Dataset(word2id, id2word, lines_e)
 dl_eval = DataLoader(ds_eval)
 
+# 创建 RNN 模型
+VOCAB_SIZE = len(word2id)
+LOSS_FN = nn.CrossEntropyLoss()
 model = M.RNNModel('RNN_TANH', VOCAB_SIZE, CONFIG['embeddingSize'],
                    nhid=512, dropout=0.5)
 if CONFIG['useCUDA']:
@@ -65,9 +69,8 @@ def evaluate(model, dataloader):
             hidden = M.repackage_hidden(hidden)
 
             with torch.no_grad():
-                output, hidden = model(data, hidden)
-
                 # model(data,hidden) 相当于调用model.forward
+                output, hidden = model(data, hidden)
 
             # 计算损失
             loss = LOSS_FN(output.view(-1, VOCAB_SIZE), target.view(-1))
@@ -103,7 +106,8 @@ for epoch in progressive:
             data, target = data.cuda(), target.cuda()
 
         hidden = M.repackage_hidden(hidden)
-        model.zero_grad()  # critical：每步运行之前清空前一步backward留下的梯度，否则梯度信息不准确
+        # critical：每步运行之前清空前一步backward留下的梯度，否则梯度信息不准确
+        model.zero_grad()
 
         # print(data.size(), hidden[0].size())
         # critical：模型的forward，将数据正式传入模型中计算并输出结果
