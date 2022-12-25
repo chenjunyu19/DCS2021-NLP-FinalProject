@@ -39,9 +39,9 @@ model.load_state_dict(torch.load(os.path.join(
 # 进行测试
 model.eval()
 with torch.no_grad():
-    hidden = model.init_hidden(requires_grad=False)
     # 将数据按batch输入
     for i, batch in enumerate(dl_test):
+        hidden = model.init_hidden(requires_grad=False)
         data, target = batch
         if CONFIG['useCUDA']:
             data, target = data.cuda(), target.cuda()
@@ -62,9 +62,8 @@ with torch.no_grad():
         for i, score in enumerate(decoded):
             result[id2word[i]] = float(score)
 
-        # 打印输入和分数最高的前 10 个词
+        # 打印输入和分数最高的前 5 个词
         print('=' * 16)
-        print(ds_test.get_words_by_ids([int(i)
-              for i in list(batch[0][0])]) + ':')
-        for k, v in sorted(result.items(), key=lambda s: -s[1])[:10]:
-            print(k, v)
+        print('input = "' + ds_test.get_words_by_ids([int(i)
+              for i in list(batch[0][0])]) + '"')
+        print('output =', dict(sorted(result.items(), key=lambda s: -s[1])[:5]))
