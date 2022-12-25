@@ -71,10 +71,9 @@ class RNNModel(nn.Module):
         output = self.drop(output)
         # critical：然后进行线性转换，view函数的用处是改变tensor的形状
         # 因为我们要训练，所以对每个位置的字词都要预测一次，所以使用包含所有字词的output
-        decoded = self.decoder(output.view(
-            output.size(0) * output.size(1), output.size(2)))
+        decoded = self.decoder(output)
 
-        return decoded.view(output.size(0), output.size(1), decoded.size(1)), hidden
+        return decoded, hidden
 
     def init_hidden(self, requires_grad=True):
         weight = next(self.parameters())

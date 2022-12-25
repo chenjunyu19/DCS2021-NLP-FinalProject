@@ -57,10 +57,9 @@ with torch.no_grad():
             hidden = hidden[0]
 
         # 将隐藏层转换为词表中每个词的分数
-        decoded = model.decoder(hidden.view(
-            hidden.size(0) * hidden.size(1), hidden.size(2)))
+        decoded = model.decoder(hidden.view(hidden.size(2)))
         result = {}
-        for i, score in enumerate(decoded[0]):
+        for i, score in enumerate(decoded):
             result[id2word[i]] = float(score)
 
         # 打印输入和分数最高的前 10 个词

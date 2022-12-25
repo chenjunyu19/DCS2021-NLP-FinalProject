@@ -19,7 +19,6 @@ np.random.seed(CONFIG['seed'])
 torch.manual_seed(CONFIG['seed'])
 if CONFIG['useCUDA']:
     torch.cuda.manual_seed(CONFIG['seed'])
-    torch.cuda.set_device(1)
 
 # 读取数据集
 lines, words = utils.read_data('train_en.txt', CONFIG['tokenizer'])
